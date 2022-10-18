@@ -45,6 +45,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Inventory")
 	FItemProperties ActiveItem;
 
+	UPROPERTY()
+	FItemProperties NullItemProperties;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Inventory")
 	int32 ActiveIndex;
 

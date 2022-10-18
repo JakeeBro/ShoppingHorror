@@ -7,6 +7,8 @@ UInventory::UInventory()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
+	NullItemProperties.ItemName = "";
+	NullItemProperties.ItemMesh = nullptr;
 }
 
 void UInventory::BeginPlay()
@@ -56,16 +58,19 @@ FItemProperties UInventory::RemoveFromInventory(FItemProperties ItemProperties)
 	}
 	else if (Values[Index] <= 1)
 	{
-		Items.RemoveAt(Index, 1, true);
-		Properties.RemoveAt(Index, 1, true);
-		Values.RemoveAt(Index, 1, true);
-
 		if (ActiveIndex == Properties.Num() - 1)
 			ActiveIndex = Properties.Num() - 2;
 		if (ActiveIndex <= 0)
 			ActiveIndex = 0;
 
-		ActiveItem = Properties[ActiveIndex];
+		Items.RemoveAt(Index, 1, true);
+		Properties.RemoveAt(Index, 1, true);
+		Values.RemoveAt(Index, 1, true);
+
+		if (Properties.Num() >= 1)
+			ActiveItem = Properties[ActiveIndex];
+		else
+			ActiveItem = NullItemProperties;
 	}
 
 	return ItemProperties;
