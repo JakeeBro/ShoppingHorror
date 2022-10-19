@@ -19,15 +19,10 @@ void UInventory::BeginPlay()
 
 void UInventory::AddToInventory(AItem* Item, FItemProperties ItemProperties)
 {
-	if (Items.Contains(Item))
+	if (ItemClasses.Contains(Item->GetClass()))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString("ADD TO INVENTORY: Item Found, Exiting"));\
-		
-		return;
-	}
-	if (Properties.Contains(ItemProperties))
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString("ADD TO INVENTORY: Item Properties Found, Adding Value"));
+		if (Print)
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString("ADD TO INVENTORY: Item Class Found, Adding Value"));
 
 		const auto Index = Properties.IndexOfByKey(ItemProperties);
 
@@ -36,19 +31,30 @@ void UInventory::AddToInventory(AItem* Item, FItemProperties ItemProperties)
 		return;
 	}
 
-	Items.Add(Item);
+	if (Print)
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString("ADD TO INVENTORY: Item Properties Not Found, Adding Item"));
+
+	ItemClasses.Add(Item->GetClass());
 	Properties.Add(ItemProperties);
 	Values.Add(1);
 
-	if (Items.Num() == 1)
+	if (ItemClasses.Num() == 1)
 	{
 		ActiveItem = Properties[0];
 	}
 }
 
-FItemProperties UInventory::RemoveFromInventory(FItemProperties ItemProperties)
+FItemProperties UInventory::RemoveFromInventory(FItemProperties ItemProperties, bool& Continue)
 {
-	if (!Properties.Contains(ItemProperties)) return ItemProperties;
+	Continue = true;
+	
+	if (!Properties.Contains(ItemProperties))
+	{
+		if (Print)
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString("REMOVE FROM INVENTORY: Given Properties Not Found in Array"));
+		Continue = false;
+		return NullItemProperties;
+	}
 
 	const auto Index = Properties.IndexOfByKey(ItemProperties);
 
@@ -63,7 +69,17 @@ FItemProperties UInventory::RemoveFromInventory(FItemProperties ItemProperties)
 		if (ActiveIndex <= 0)
 			ActiveIndex = 0;
 
-		Items.RemoveAt(Index, 1, true);
+		if (Print)
+		{
+			FString Class = "Class: " + ItemClasses[Index]->GetName() + " // ";
+			FString PropertyName = "Item Name: " + Properties[Index].ItemName + " // ";
+			FString PropertyMesh = "Item Mesh: " + Properties[Index].ItemMesh->GetName() + " // ";
+			FString Value = "Value: " + FString::FromInt(Values[Index]);
+
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString("REMOVING: " + Class + PropertyName + PropertyMesh + Value));
+		}
+
+		ItemClasses.RemoveAt(Index, 1, true);
 		Properties.RemoveAt(Index, 1, true);
 		Values.RemoveAt(Index, 1, true);
 
@@ -76,18 +92,27 @@ FItemProperties UInventory::RemoveFromInventory(FItemProperties ItemProperties)
 	return ItemProperties;
 }
 
+void UInventory::ReadActiveIndex(TSubclassOf<AItem>& IndexClass, FItemProperties& IndexProperties, int32& IndexValue)
+{
+	if (ItemClasses.Num() <= 0) return;
+	
+	IndexClass = ItemClasses[ActiveIndex];
+	IndexProperties = Properties[ActiveIndex];
+	IndexValue = Values[ActiveIndex];
+}
+
 void UInventory::UpdateActiveIndex(float AxisValue)
 {
-	if (Items.Num() <= 0 || AxisValue == 0)
+	if (ItemClasses.Num() <= 0 || AxisValue == 0)
 	{
 		if (Print)
-			GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Purple, FString("Scroll Requirements Not Met"));
+			GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Purple, FString("UPDATE ACTIVE INDEX: Scroll Requirements Not Met"));
 		return;
 	}
 
 	if (AxisValue < 0)
 	{
-		if (ActiveIndex + 1 == Items.Num())
+		if (ActiveIndex + 1 == ItemClasses.Num())
 			ActiveIndex = 0;
 		else
 			ActiveIndex++;
@@ -95,26 +120,10 @@ void UInventory::UpdateActiveIndex(float AxisValue)
 	else if (AxisValue > 0)
 	{
 		if (ActiveIndex == 0)
-			ActiveIndex = Items.Num() - 1;
+			ActiveIndex = ItemClasses.Num() - 1;
 		else
 			ActiveIndex--;
 	}
 
 	ActiveItem = Properties[ActiveIndex];
-}
-
-void UInventory::AddItem(AItem* Item, FItemProperties ItemProperties)
-{
-	auto Key = ItemPropertiesMap.FindKey(ItemProperties);
-	if (Key != nullptr) return;
-	
-	ItemPropertiesMap.Add(Item, ItemProperties);
-}
-
-void UInventory::RemoveItem(AItem* Item, bool Clear)
-{
-	if (ItemPropertiesMap.Num() <= 0) return;
-	
-	if (ItemPropertiesMap.Contains(Item) && Clear)
-		ItemPropertiesMap.Remove(Item);
 }

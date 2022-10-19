@@ -19,26 +19,6 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	// REQUIRED Inventory
-	UFUNCTION(BlueprintCallable, Category="List Tracker")
-	AItem* AddToHeldList(AItem* Item);
-
-	// TODO Spawn Items
-	UFUNCTION(BlueprintCallable, Category="List Tracker")
-	bool RemoveFromHeldList(AItem* Item);
-	
-	// REQUIRED Inventory / Placement / Input
-	UFUNCTION(BlueprintCallable, Category="List Tracker")
-	void UpdateActiveHeldIndex(float AxisValue);
-
-	// REQUIRED UI
-	UFUNCTION(BlueprintCallable, Category="List Tracker")
-	FString UpdateActiveHeldItemName();
-
-	// REQUIRED UI
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="List Tracker")
-	FString ActiveHeldItemName;
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -46,19 +26,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="List Tracker")
 	TMap<TSubclassOf<AItem>, int32> TargetList;
 
-	// REQUIRED Inventory
+	// TODO Quest Tracking
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="List Tracker")
 	TMap<AItem*, int32> HeldList;
 
-	// REQUIRED Inventory / Placement
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="List Tracker")
-	int32 ActiveHeldIndex;
-
-	// REQUIRED Inventory / Placement
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="List Tracker")
-	AItem* ActiveHeldItem;
-
-	// REQUIRED Debug
+	// Debug
 	UPROPERTY(EditAnywhere, Category="List Tracker")
 	bool Print = false;
 };
