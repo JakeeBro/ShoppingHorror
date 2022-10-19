@@ -36,6 +36,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Inventory")
 	TArray<AItem*> Items;
 
+	// TODO Fix Items Array Deleting itself at runtime
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Inventory")
+	TArray<TSubclassOf<AItem>> ItemClasses;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Inventory")
 	TArray<FItemProperties> Properties;
 
